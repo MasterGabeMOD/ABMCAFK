@@ -3,10 +3,7 @@ main: server.alanbecker.net.Main
 version: 1.0
 api-version: 1.20
 author: MasterGabeMOD
-depend: [Essentials]
-commands:
-  afkroom:
-    description: AFK Room Command
-    usage: /afkroom <set/tp>
-    permission: afkroom.admin
-    permission-message: You are too weak. (Requires permission <permission>)
+permissions:
+  abmc.afk.ignore:
+    description: Allows a player to be ignored by the AFK plugin
+    default: op
