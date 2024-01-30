@@ -1,9 +1,17 @@
 name: ABMCAFK
 main: server.alanbecker.net.Main
-version: 1.1
+version: 1.2
 api-version: 1.20
 author: MasterGabeMOD
 permissions:
   abmc.afk.ignore:
     description: Allows a player to be ignored by the AFK plugin
     default: op
+  abmc.afk.mod:
+    description: Allows checking of AFK times of players
+    default: op
+commands:
+  afkcheck:
+    description: Check how long a player has been AFK
+    usage: /afkcheck <player>
+    permission: abmc.afk.mod
