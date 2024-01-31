@@ -163,6 +163,7 @@ public class Main extends JavaPlugin implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         joinTimeMap.put(player, System.currentTimeMillis());
+        applyAFKPotionEffects(player, false);
     }
 
     @EventHandler
