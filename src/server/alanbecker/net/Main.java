@@ -83,16 +83,21 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             }
 
+            // Fetch the time since last movement
+            Long lastMoveTime = lastMoveTimeMap.getOrDefault(target, System.currentTimeMillis());
+            long timeSinceLastMove = (System.currentTimeMillis() - lastMoveTime) / 1000;
+
             Long afkStartTime = afkStartTimeMap.getOrDefault(target, 0L);
             if (afkStartTime == 0L) {
-                sender.sendMessage(ChatColor.GOLD + target.getName() + " is not AFK.");
+                sender.sendMessage(ChatColor.GOLD + target.getName() + " is not AFK. Last move: " + timeSinceLastMove + " seconds ago.");
             } else {
                 long afkDurationInSeconds = (System.currentTimeMillis() - afkStartTime) / 1000;
-                sender.sendMessage(ChatColor.GOLD + target.getName() + " has been AFK for " + afkDurationInSeconds + " seconds.");
+                sender.sendMessage(ChatColor.GOLD + target.getName() + " has been AFK for " + afkDurationInSeconds + " seconds. Last move: " + timeSinceLastMove + " seconds ago.");
             }
         }
         return true;
     }
+
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
@@ -192,7 +197,7 @@ public class Main extends JavaPlugin implements Listener {
         Long afkStartTime = afkStartTimeMap.getOrDefault(player, 0L);
 
         if (afk) {
-            if (afkStartTime == 0L) { // Player just became AFK
+            if (afkStartTime == 0L) { 
                 afkStartTimeMap.put(player, System.currentTimeMillis());
                 applyAFKPotionEffects(player, true);
                 BukkitTask titleTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
@@ -201,7 +206,7 @@ public class Main extends JavaPlugin implements Listener {
                 afkTitleTasks.put(player, titleTask);
             }
         } else {
-            if (afkStartTime != 0L) { // Player is no longer AFK
+            if (afkStartTime != 0L) { 
                 applyAFKPotionEffects(player, false);
                 player.sendTitle("", "", 0, 0, 0);
                 BukkitTask titleTask = afkTitleTasks.remove(player);
