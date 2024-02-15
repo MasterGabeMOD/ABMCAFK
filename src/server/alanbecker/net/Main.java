@@ -35,6 +35,7 @@ public class Main extends JavaPlugin implements Listener {
 	    private final Map<Player, Boolean> afkStatusMap = new HashMap<>();
 	    private final Map<Player, BukkitTask> afkTitleTasks = new HashMap<>();
 	    private final Map<Player, Long> afkStartTimeMap = new HashMap<>();
+	    private List<PotionEffect> afkPotionEffects;
 
 	    private int afkTimeThreshold; 
 	    private String afkTitle; 
@@ -58,6 +59,16 @@ public class Main extends JavaPlugin implements Listener {
 	        afkTimeThreshold = config.getInt("afk-time-threshold", 120);
 	        afkTitle = ChatColor.translateAlternateColorCodes('&', config.getString("afk-title", "&cYou're AFK!"));
 	        afkSubtitle = ChatColor.translateAlternateColorCodes('&', config.getString("afk-subtitle", "&eMove to become visible again."));
+	        
+	        afkPotionEffects = new ArrayList<>();
+	        List<Map<?, ?>> effectsConfig = config.getMapList("afk-potion-effects");
+	        for (Map<?, ?> effectConfig : effectsConfig) {
+	            PotionEffectType type = PotionEffectType.getByName((String) effectConfig.get("type"));
+	            int duration = (Integer) effectConfig.get("duration");
+	            int amplifier = (Integer) effectConfig.get("amplifier");
+	            boolean visible = (Boolean) effectConfig.get("visible");
+	            afkPotionEffects.add(new PotionEffect(type, duration, amplifier, false, visible));
+	        }
 	    }
     @Override
     public void onDisable() {
@@ -223,9 +234,11 @@ public class Main extends JavaPlugin implements Listener {
         if (apply) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 1, false, false));
             player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, false, false));
+            afkPotionEffects.forEach(player::addPotionEffect);
         } else {
             player.removePotionEffect(PotionEffectType.BLINDNESS);
             player.removePotionEffect(PotionEffectType.INVISIBILITY);
+            afkPotionEffects.forEach(effect -> player.removePotionEffect(effect.getType()));
         }
     }
 

@@ -1,3 +1,13 @@
-afk-time-threshold: 120
+afk-time-threshold: 180
 afk-title: "&cYou're AFK!"
 afk-subtitle: "&eMove to become visible again."
+
+afk-potion-effects:
+  - type: BLINDNESS
+    duration: 999999
+    amplifier: 1
+    visible: false
+  - type: INVISIBILITY
+    duration: 999999
+    amplifier: 1
+    visible: false
