@@ -190,11 +190,17 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     private void checkAFKPlayers() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (!player.hasPermission(IGNORE_PERMISSION) && isAFK(player) && !hasRecentlyJoined(player)) {
-                setAFKStatus(player, true);
+        long currentTime = System.currentTimeMillis();
+        Bukkit.getOnlinePlayers().forEach(player -> {
+            if (!player.hasPermission(IGNORE_PERMISSION)) {
+                long lastMoveTime = lastMoveTimeMap.getOrDefault(player, currentTime);
+                boolean isAFK = currentTime - lastMoveTime > afkTimeThreshold * 1000;
+                boolean recentlyJoined = currentTime - joinTimeMap.getOrDefault(player, 0L) < 120000;
+                if (isAFK && !recentlyJoined) {
+                    Bukkit.getScheduler().runTask(this, () -> setAFKStatus(player, true));
+                }
             }
-        }
+        });
     }
 
     private boolean hasRecentlyJoined(Player player) {
