@@ -70,10 +70,12 @@ public class Main extends JavaPlugin implements Listener {
 	            afkPotionEffects.add(new PotionEffect(type, duration, amplifier, false, visible));
 	        }
 	    }
-    @Override
-    public void onDisable() {
-        getLogger().info("AFKPlugin has been disabled!");
-    }
+	    @Override
+	    public void onDisable() {
+	        getLogger().info("AFKPlugin has been disabled!");
+	        afkTitleTasks.values().forEach(BukkitTask::cancel);
+	        afkTitleTasks.clear();
+	    }
     
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -94,7 +96,6 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             }
 
-            // Fetch the time since last movement
             Long lastMoveTime = lastMoveTimeMap.getOrDefault(target, System.currentTimeMillis());
             long timeSinceLastMove = (System.currentTimeMillis() - lastMoveTime) / 1000;
 
@@ -190,17 +191,11 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     private void checkAFKPlayers() {
-        long currentTime = System.currentTimeMillis();
-        Bukkit.getOnlinePlayers().forEach(player -> {
-            if (!player.hasPermission(IGNORE_PERMISSION)) {
-                long lastMoveTime = lastMoveTimeMap.getOrDefault(player, currentTime);
-                boolean isAFK = currentTime - lastMoveTime > afkTimeThreshold * 1000;
-                boolean recentlyJoined = currentTime - joinTimeMap.getOrDefault(player, 0L) < 120000;
-                if (isAFK && !recentlyJoined) {
-                    Bukkit.getScheduler().runTask(this, () -> setAFKStatus(player, true));
-                }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (!player.hasPermission(IGNORE_PERMISSION) && isAFK(player) && !hasRecentlyJoined(player)) {
+                setAFKStatus(player, true);
             }
-        });
+        }
     }
 
     private boolean hasRecentlyJoined(Player player) {
