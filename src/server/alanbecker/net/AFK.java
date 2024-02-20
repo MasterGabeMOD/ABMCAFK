@@ -12,6 +12,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Main extends JavaPlugin implements Listener {
+public class AFK extends JavaPlugin implements Listener {
 
 	 private static final String IGNORE_PERMISSION = "abmc.afk.ignore";
 
@@ -184,6 +185,12 @@ public class Main extends JavaPlugin implements Listener {
         setAFKStatus(player, false);
         afkTitleTasks.remove(player); 
         afkStatusMap.remove(player);
+    }
+    
+    @EventHandler
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        Player player = event.getPlayer();
+        resetAFKStatus(player);
     }
 
     private void checkAFKPlayersAsync() {
