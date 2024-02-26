@@ -220,7 +220,7 @@ public class AFK extends JavaPlugin implements Listener {
             if (afkStartTime == 0L) { 
                 afkStartTimeMap.put(player, System.currentTimeMillis());
                 applyAFKPotionEffects(player, true);
-                BukkitTask titleTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
+                BukkitTask titleTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
                     player.sendTitle(afkTitle, afkSubtitle, 10, 100, 20);
                 }, 0L, 40L); 
                 afkTitleTasks.put(player, titleTask);
