@@ -78,51 +78,63 @@ public class AFK extends JavaPlugin implements Listener {
 	        afkTitleTasks.clear();
 	    }
     
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (command.getName().equalsIgnoreCase("afkcheck")) {
-            if (!sender.hasPermission("abmc.afk.mod")) {
-                sender.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
-                return true;
-            }
+	    @Override
+	    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+	        if (command.getName().equalsIgnoreCase("afkcheck")) {
+	            if (args.length == 0) {
+	                sender.sendMessage(ChatColor.RED + "Usage: /afkcheck <player|reload>");
+	                return true;
+	            }
+	            
+	            if (args[0].equalsIgnoreCase("reload")) {
+	                if (!sender.hasPermission("abmc.afk.reload")) {
+	                    sender.sendMessage(ChatColor.RED + "You do not have permission to reload the configuration.");
+	                    return true;
+	                }
+	                
+	                reloadConfig();
+	                loadConfig();
+	                sender.sendMessage(ChatColor.GREEN + "Configuration reloaded.");
+	                return true;
+	            }
+	            
+	            if (!sender.hasPermission("abmc.afk.mod")) {
+	                sender.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
+	                return true;
+	            }
+	            
+	            Player target = getServer().getPlayer(args[0]);
+	            if (target == null) {
+	                sender.sendMessage(ChatColor.RED + "Player not found.");
+	                return true;
+	            }
+	            
+	            Long lastMoveTime = lastMoveTimeMap.getOrDefault(target, System.currentTimeMillis());
+	            long timeSinceLastMove = (System.currentTimeMillis() - lastMoveTime) / 1000;
+	            
+	            Long afkStartTime = afkStartTimeMap.getOrDefault(target, 0L);
+	            if (afkStartTime == 0L) {
+	                sender.sendMessage(ChatColor.GOLD + target.getName() + " is not AFK. Last move: " + timeSinceLastMove + " seconds ago.");
+	            } else {
+	                long afkDurationInSeconds = (System.currentTimeMillis() - afkStartTime) / 1000;
+	                sender.sendMessage(ChatColor.GOLD + target.getName() + " has been AFK for " + afkDurationInSeconds + " seconds. Last move: " + timeSinceLastMove + " seconds ago.");
+	            }
+	        }
+	        return true;
+	    }
 
-            if (args.length != 1) {
-                sender.sendMessage(ChatColor.RED + "Usage: /afkcheck <player>");
-                return true;
-            }
 
-            Player target = getServer().getPlayer(args[0]);
-            if (target == null) {
-                sender.sendMessage(ChatColor.RED + "Player not found.");
-                return true;
-            }
-
-            Long lastMoveTime = lastMoveTimeMap.getOrDefault(target, System.currentTimeMillis());
-            long timeSinceLastMove = (System.currentTimeMillis() - lastMoveTime) / 1000;
-
-            Long afkStartTime = afkStartTimeMap.getOrDefault(target, 0L);
-            if (afkStartTime == 0L) {
-                sender.sendMessage(ChatColor.GOLD + target.getName() + " is not AFK. Last move: " + timeSinceLastMove + " seconds ago.");
-            } else {
-                long afkDurationInSeconds = (System.currentTimeMillis() - afkStartTime) / 1000;
-                sender.sendMessage(ChatColor.GOLD + target.getName() + " has been AFK for " + afkDurationInSeconds + " seconds. Last move: " + timeSinceLastMove + " seconds ago.");
-            }
-        }
-        return true;
-    }
-
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (command.getName().equalsIgnoreCase("afkcheck") && args.length == 1) {
-            List<String> playerNames = new ArrayList<>();
-            for (Player player : getServer().getOnlinePlayers()) {
-                playerNames.add(player.getName());
-            }
-            return playerNames;
-        }
-        return null;
-    }
+	    @Override
+	    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+	        if (command.getName().equalsIgnoreCase("afkcheck") && args.length == 1) {
+	            List<String> playerNames = new ArrayList<>();
+	            for (Player player : getServer().getOnlinePlayers()) {
+	                playerNames.add(player.getName());
+	            }
+	            return playerNames;
+	        }
+	        return null;
+	    }
     
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
