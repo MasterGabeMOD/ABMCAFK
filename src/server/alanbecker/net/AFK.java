@@ -3,6 +3,7 @@ package server.alanbecker.net;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,7 +20,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.command.Command;
-
+import org.bukkit.command.CommandExecutor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,50 +28,50 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AFK extends JavaPlugin implements Listener {
+public class AFK extends JavaPlugin implements Listener, CommandExecutor, TabCompleter {
 
-	 private static final String IGNORE_PERMISSION = "abmc.afk.ignore";
+    private static final String IGNORE_PERMISSION = "abmc.afk.ignore";
 
-	    private final Map<Player, Long> lastMoveTimeMap = new HashMap<>();
-	    private final Map<Player, Long> joinTimeMap = new HashMap<>();
-	    private final Map<Player, Boolean> afkStatusMap = new HashMap<>();
-	    private final Map<Player, BukkitTask> afkTitleTasks = new HashMap<>();
-	    private final Map<Player, Long> afkStartTimeMap = new HashMap<>();
-	    private List<PotionEffect> afkPotionEffects;
+    private final Map<Player, Long> lastMoveTimeMap = new HashMap<>();
+    private final Map<Player, Long> joinTimeMap = new HashMap<>();
+    private final Map<Player, Boolean> afkStatusMap = new HashMap<>();
+    private final Map<Player, BukkitTask> afkTitleTasks = new HashMap<>();
+    private final Map<Player, Long> afkStartTimeMap = new HashMap<>();
+    private List<PotionEffect> afkPotionEffects;
 
-	    private int afkTimeThreshold; 
-	    private String afkTitle; 
-	    private String afkSubtitle;
+    private int afkTimeThreshold;
+    private String afkTitle;
+    private String afkSubtitle;
 
-	    @Override
-	    public void onEnable() {
-	        saveDefaultConfig(); 
-	        loadConfig();
+    @Override
+    public void onEnable() {
+        saveDefaultConfig();
+        loadConfig();
 
-	        getLogger().info("AFKPlugin has been enabled!");
-	        getServer().getPluginManager().registerEvents(this, this);
-	        this.getCommand("afkcheck").setExecutor(this);
-	        this.getCommand("afkcheck").setTabCompleter(this);
+        getLogger().info("AFKPlugin has been enabled!");
+        getServer().getPluginManager().registerEvents(this, this);
+        this.getCommand("afkcheck").setExecutor(this);
+        this.getCommand("afkcheck").setTabCompleter(this);
 
-	        Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::checkAFKPlayersAsync, 20L, 20L);
-	    }
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::checkAFKPlayersAsync, 20L, 20L);
+    }
 
-	    private void loadConfig() {
-	        FileConfiguration config = getConfig();
-	        afkTimeThreshold = config.getInt("afk-time-threshold", 120);
-	        afkTitle = ChatColor.translateAlternateColorCodes('&', config.getString("afk-title", "&cYou're AFK!"));
-	        afkSubtitle = ChatColor.translateAlternateColorCodes('&', config.getString("afk-subtitle", "&eMove to become visible again."));
-	        
-	        afkPotionEffects = new ArrayList<>();
-	        List<Map<?, ?>> effectsConfig = config.getMapList("afk-potion-effects");
-	        for (Map<?, ?> effectConfig : effectsConfig) {
-	            PotionEffectType type = PotionEffectType.getByName((String) effectConfig.get("type"));
-	            int duration = (Integer) effectConfig.get("duration");
-	            int amplifier = (Integer) effectConfig.get("amplifier");
-	            boolean visible = (Boolean) effectConfig.get("visible");
-	            afkPotionEffects.add(new PotionEffect(type, duration, amplifier, false, visible));
-	        }
-	    }
+    private void loadConfig() {
+        FileConfiguration config = getConfig();
+        afkTimeThreshold = config.getInt("afk-time-threshold", 120);
+        afkTitle = ChatColor.translateAlternateColorCodes('&', config.getString("afk-title", "&cYou're AFK!"));
+        afkSubtitle = ChatColor.translateAlternateColorCodes('&', config.getString("afk-subtitle", "&eMove to become visible again."));
+
+        afkPotionEffects = new ArrayList<>();
+        List<Map<?, ?>> effectsConfig = config.getMapList("afk-potion-effects");
+        for (Map<?, ?> effectConfig : effectsConfig) {
+            PotionEffectType type = PotionEffectType.getByName((String) effectConfig.get("type"));
+            int duration = (Integer) effectConfig.get("duration");
+            int amplifier = (Integer) effectConfig.get("amplifier");
+            boolean visible = (Boolean) effectConfig.get("visible");
+            afkPotionEffects.add(new PotionEffect(type, duration, amplifier, false, visible));
+        }
+    }
 	    @Override
 	    public void onDisable() {
 	        getLogger().info("AFKPlugin has been disabled!");
@@ -128,9 +129,15 @@ public class AFK extends JavaPlugin implements Listener {
 	    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
 	        if (command.getName().equalsIgnoreCase("afkcheck") && args.length == 1) {
 	            List<String> playerNames = new ArrayList<>();
+	            String partialPlayerName = args[0].toLowerCase();
+
 	            for (Player player : getServer().getOnlinePlayers()) {
-	                playerNames.add(player.getName());
+	                String playerName = player.getName();
+	                if (playerName.toLowerCase().startsWith(partialPlayerName)) {
+	                    playerNames.add(playerName);
+	                }
 	            }
+
 	            return playerNames;
 	        }
 	        return null;
