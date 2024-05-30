@@ -53,6 +53,9 @@ public class AFK extends JavaPlugin implements Listener, CommandExecutor, TabCom
         this.getCommand("afkcheck").setExecutor(this);
         this.getCommand("afkcheck").setTabCompleter(this);
 
+        new AFKFreeze(this);
+        new AFKRotate(this);
+
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::checkAFKPlayersAsync, 20L, 20L);
     }
 

@@ -14,8 +14,22 @@ permissions:
   abmc.afk.reload:
     description: Allows reloading of the AFK plugin configuration
     default: op
+  abmc.afk.freeze:
+    description: Allows freezing and unfreezing of players
+    default: op
+  abmc.afk.rotate:
+    description: Allows rotating of players
+    default: op
 commands:
   afkcheck:
     description: Check how long a player has been AFK or reload the configuration
     usage: /afkcheck <player|reload>
     permission: abmc.afk.mod
+  afkfreeze:
+    description: Freeze or unfreeze a player to prevent movement
+    usage: /afkfreeze <playername>
+    permission: abmc.afk.freeze
+  afkrotate:
+    description: Rotate or stop rotating a player's position
+    usage: /afkrotate <playername>
+    permission: abmc.afk.rotate
